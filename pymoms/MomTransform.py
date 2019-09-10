@@ -74,6 +74,15 @@ class Moments2D:
         The 'shape' parameter represents the actual shape of the 2D matrix for which
         we want to calculate the particular transform's coefficients.
 
+    **kwargs: kew word arguments
+        It is used for feeding additional helpful parameters of flags.
+        Currently, it supports:
+
+        fromCenterOfMass: bool
+            Enables the detection of the center of mass for each 2D matrix. It is mostly
+            used in central moments to change location of the coordinate system from 
+            the default location, which is the central matrix point, to its center of mass.
+
 
     Examples
     --------
