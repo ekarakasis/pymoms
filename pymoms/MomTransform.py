@@ -81,22 +81,26 @@ class Moments2D:
 
     # creates a small 2D matrix with integer values in the range [0, 255]    
     # for easy visualization of the results
-    dim = 5
-    Mtx2D = np.random.randint(0, 255, (dim, dim))
+    lngth = 5
+    Mtx2D = np.random.randint(0, 255, (lngth, lngth))
 
     # defines a class instance, which use as kernel on both axes the Chebyshev
     # polynomial of the first kind. For achieving a perfect reconstruction
-    # we will need dim x dim coefficients, so the upToDegree parameter 
-    # must be equal to dim-1, since the first degree is 0.
-    MT = Moments2D(['chebyshev1'], [dim-1], Mtx2D.shape) # moment transform instance
+    # we will need lngth x lngth coefficients, so the upToDegree parameter 
+    # must be equal to lngth-1, since the first degree is 0.
+    MT = Moments2D(
+        family=['chebyshev1'], 
+        upToDegree=[lngth-1], 
+        shape=Mtx2D.shape
+    ) # moment transform instance
 
     coeffs = MT.ForwardTransform(Mtx2D)
     Mtx2D_reconstructed = MT.InverseTransform(coeffs)
 
-    print(Mtx2D)
-    print(Mtx2D_reconstructed)
+    print('original 2D matrix:\n {}'.format(Mtx2D))
+    print('\nreconstructed 2D matrix:\n {}'.format(Mtx2D_reconstructed))
 
-    # NOTE: not all the kernels have inverse transform.
+    # NOTE: not all the kernels have inverse transform.  
 
 
     References     

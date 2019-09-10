@@ -109,6 +109,51 @@ def GetKernel(family, dim):
         The first element of the resulted tuple is the kernel's function, the second the the coresponding
         weight function, the third is the variables values that are used as input in the kernel function
         and finally the fourth element is a flag (boolean) which infroms whether or not the kernel is orthogonal.
+
+    Examples 
+    --------
+    from pymoms import Kernel
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    def myplot(x, y, title, ylabel):
+        plt.figure(figsize=(15,5))
+        plt.plot(x, y)
+        plt.grid('on')
+        plt.title(title)
+        plt.xlabel('x')
+        plt.ylabel(ylabel)
+        plt.show()
+        
+    upToOrder = 5
+    krnLen = 100
+
+    # Get the Chebyshev Polynomial of the first kind as Kernel.
+    # Actually, for the particular polynomial family, the resulted xi is given by:
+    # xi = np.cos(np.pi*(np.arange(0, krnLen)+0.5)/float(krnLen))
+    kernel, weights, xi, isOrthogonal = Kernel.GetKernel('chebyshev1', krnLen)
+
+    # Currently, the supported kernel families are:
+    #    * 'chebyshev1': the Chebyshev polynomials of the first kind,        
+    #    * 'chebyshevD': the Discrete Chebyshev (or else Tchebichef) polynomials,
+    #    * 'geometric' : the geometric monomials (Pn(x)   = x**n),
+    #    * 'central'   : the central monomials (Pn(x; xm) = (x-xm)**n)
+
+    # Calculate the polynomial values and the corresponding weights
+    P = kernel(upToOrder, xi)
+    Wp = weights(upToOrder, krnLen)
+
+    P_norm = np.zeros(P.shape)
+    # normalized the polynomial values using the weights
+    for idx, p in enumerate(P):
+        P_norm[idx,:] = P[idx,:] * Wp[idx]
+
+    myplot(xi, P.T, 'Chebyshef Polynomial of first kind', '$P_{n}(x)$')
+    myplot(xi, P_norm.T, 'Norm. Chebyshef Polynomial of first kind', '$\overline{P}_{n}(x)$')
+
+    # let us define a different xi:
+    xi = np.linspace(-1, 1, krnLen)
+    myplot(xi, P.T, 'Chebyshef Polynomial of first kind', '$P_{n}(x)$')
     """
 
     kernels = {
