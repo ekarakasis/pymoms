@@ -84,7 +84,7 @@ import numpy as _np
 
 # -----------------------------------------------------------------------------------
 
-def GetKernel(family, dim):
+def GetKernel(family, krnLen):
     """It is responsible for returning the selected kernel's calculation function along with the coresponding weights and some other stuff.
     
     Parameters
@@ -159,25 +159,25 @@ def GetKernel(family, dim):
         'chebyshev1': { # continuous Chebychev of 1st kind
             'poly'        : ConOrthoPoly.Chebyshev1st.Poly,
             'weights'     : ConOrthoPoly.Chebyshev1st.WeightScheme,
-            'x'           : _np.cos(_np.pi*(_np.arange(0, dim)+0.5)/float(dim)),
+            'x'           : _np.cos(_np.pi*(_np.arange(0, krnLen)+0.5)/float(krnLen)),
             'isOrthogonal': True,
         },
         'chebyshevD': { # discrete Chebyshef (or else Tchebichef)
             'poly'        : DisOrthoPoly.Chebyshev.Poly,
             'weights'     : DisOrthoPoly.Chebyshev.WeightScheme,
-            'x'           : _np.arange(0, dim),
+            'x'           : _np.arange(0, krnLen),
             'isOrthogonal': True,
         },
         'geometric': { 
             'poly'        : NonOrthoFunc.Geometric.Calc,
             'weights'     : NonOrthoFunc.Geometric.WeightScheme,
-            'x'           : _np.arange(0, dim) / dim, # normalize for improve instability issues
+            'x'           : _np.arange(0, krnLen) / krnLen, # normalize for improve instability issues
             'isOrthogonal': False,
         },
         'central': { 
             'poly'        : NonOrthoFunc.Central.Calc,
             'weights'     : NonOrthoFunc.Central.WeightScheme,
-            'x'           : (_np.arange(0, dim) - (dim-1)/2.) / dim, # normalize for improve instability issues
+            'x'           : (_np.arange(0, krnLen) - (krnLen-1)/2.) / krnLen, # normalize for improve instability issues
             'isOrthogonal': False,
         },
     }  
