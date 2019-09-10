@@ -81,16 +81,17 @@ class Moments2D:
 
     # creates a small 2D matrix with integer values in the range [0, 255]    
     # for easy visualization of the results
-    lngth = 5
-    Mtx2D = np.random.randint(0, 255, (lngth, lngth))
+    mtxShape = (5, 5)
+    Mtx2D = np.random.randint(0, 255, mtxShape)
 
     # defines a class instance, which use as kernel on both axes the Chebyshev
     # polynomial of the first kind. For achieving a perfect reconstruction
-    # we will need lngth x lngth coefficients, so the upToDegree parameter 
-    # must be equal to lngth-1, since the first degree is 0.
+    # we will need 5x5 coefficients, so the upToDegree parameter 
+    # must be equal to 5-1=4, since the first degree is 0.
+    maxDegree = 4
     MT = Moments2D(
         family=['chebyshev1'], 
-        upToDegree=[lngth-1], 
+        upToDegree=[maxDegree], 
         shape=Mtx2D.shape
     ) # moment transform instance
 
