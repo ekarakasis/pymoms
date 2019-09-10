@@ -74,6 +74,15 @@ class Moments2D:
         The 'shape' parameter represents the actual shape of the 2D matrix for which
         we want to calculate the particular transform's coefficients.
 
+    **kwargs: kew word arguments
+        It is used for feeding additional helpful parameters of flags.
+        Currently, it supports:
+
+        fromCenterOfMass: bool
+            Enables the detection of the center of mass for each 2D matrix. It is mostly
+            used in central moments to change location of the coordinate system from 
+            the default location, which is the central matrix point, to its center of mass.
+
 
     Examples
     --------
@@ -81,22 +90,27 @@ class Moments2D:
 
     # creates a small 2D matrix with integer values in the range [0, 255]    
     # for easy visualization of the results
-    dim = 5
-    Mtx2D = np.random.randint(0, 255, (dim, dim))
+    mtxShape = (5, 5)
+    Mtx2D = np.random.randint(0, 255, mtxShape)
 
     # defines a class instance, which use as kernel on both axes the Chebyshev
     # polynomial of the first kind. For achieving a perfect reconstruction
-    # we will need dim x dim coefficients, so the upToDegree parameter 
-    # must be equal to dim-1, since the first degree is 0.
-    MT = Moments2D(['chebyshev1'], [dim-1], Mtx2D.shape) # moment transform instance
+    # we will need 5x5 coefficients, so the upToDegree parameter 
+    # must be equal to 5-1=4, since the first degree is 0.
+    maxDegree = 4
+    MT = Moments2D(
+        family=['chebyshev1'], 
+        upToDegree=[maxDegree], 
+        shape=Mtx2D.shape
+    ) # moment transform instance
 
     coeffs = MT.ForwardTransform(Mtx2D)
     Mtx2D_reconstructed = MT.InverseTransform(coeffs)
 
-    print(Mtx2D)
-    print(Mtx2D_reconstructed)
+    print('original 2D matrix:\n {}'.format(Mtx2D))
+    print('\nreconstructed 2D matrix:\n {}'.format(Mtx2D_reconstructed))
 
-    # NOTE: not all the kernels have inverse transform.
+    # NOTE: not all the kernels have inverse transform.  
 
 
     References     
@@ -120,7 +134,17 @@ class Moments2D:
         invariants. IEEE Transactions on Image Processing, 23(2), 596-611.
     """
 
-    def __init__(self, family, upToDegree, shape):
+    def __init__(self, family, upToDegree, shape, **kwargs):
+
+        # ===== Checks for additional key word arguments =====
+        self._keyWords = {
+            'fromCenterOfMass': False,
+        }
+
+        for kw in kwargs:
+            if kw in self._keyWords:
+                self._keyWords[kw] = kwargs[kw]        
+
 
         # ===== Check parameters length =====
         if len(family) == 1:
@@ -141,17 +165,17 @@ class Moments2D:
         cols = 1
 
         upToDegreeY = upToDegree[rows]
-        upToDegreeX = upToDegree[cols]
-        DimY        = shape[rows]
-        DimX        = shape[cols]
+        upToDegreeX = upToDegree[cols]        
+        krnLenY        = shape[rows]
+        krnLenX        = shape[cols]
 
-        kernelY, weightsY, yj, self._isOrthogonalY = _Kernel.GetKernel(family[rows], DimY)
-        kernelX, weightsX, xi, self._isOrthogonalX = _Kernel.GetKernel(family[cols], DimX)                
+        kernelY, weightsY, yj, self._isOrthogonalY = _Kernel.GetKernel(family[rows], krnLenY)
+        kernelX, weightsX, xi, self._isOrthogonalX = _Kernel.GetKernel(family[cols], krnLenX)                
                         
         self._krnY = kernelY(upToDegreeY, yj)
         self._krnX = kernelX(upToDegreeX, xi)
-        self._wy   = weightsY(upToDegreeY, DimY)
-        self._wx   = weightsX(upToDegreeX, DimX)
+        self._wy   = weightsY(upToDegreeY, krnLenY)
+        self._wx   = weightsX(upToDegreeX, krnLenX)
 
         # # used by the implementation of forward transfrom with convolution
         # self._krnl2D = _np.zeros((self._upToDegree[0]+1, self._upToDegree[1]+1, self._shape[0], self._shape[1]))
@@ -177,17 +201,29 @@ class Moments2D:
 
         # NOTE: for template matching it is a good idea to enable the following code,
         # but in cases where the moments are going to be used as local descriptors
-        # of key points, should be left as comment.
+        # of key points, should be not be run.
 
         # it calculates the center of mass for being used in central moments instead
         # of the middle point of the kernel's domain.
-        # if self._family[0] == 'central' and self._family[1] == 'central':
-        #     ym, xm = self.GetCenterOfMass(Mtx2D)
-        #     yj = _np.arange(0, self._shape[0]) - ym
-        #     xi = _np.arange(0, self._shape[1]) - xm
-        #     Calc = _Kernel.NonOrthoFunc.Central.Calc
-        #     self._krnY = Calc(self._upToDegree[0], yj)
-        #     self._krnX = Calc(self._upToDegree[1], xi)
+        if self._keyWords['fromCenterOfMass'] and 'central' in self._family:
+            
+            ym, xm = self.GetCenterOfMass(Mtx2D)
+            
+            if self._family[0] == 'central' and self._family[1] == 'central':                
+                yj = _np.arange(0, self._shape[0]) - ym
+                xi = _np.arange(0, self._shape[1]) - xm
+                Calc = _Kernel.NonOrthoFunc.Central.Calc
+                self._krnY = Calc(self._upToDegree[0], yj)
+                self._krnX = Calc(self._upToDegree[1], xi)
+            elif self._family[0] == 'central':                
+                yj = _np.arange(0, self._shape[0]) - ym
+                Calc = _Kernel.NonOrthoFunc.Central.Calc
+                self._krnY = Calc(self._upToDegree[0], yj)
+            elif self._family[1] == 'central':                
+                xi = _np.arange(0, self._shape[1]) - xm
+                Calc = _Kernel.NonOrthoFunc.Central.Calc
+                self._krnX = Calc(self._upToDegree[1], xi)
+            
 
 
         return (self._wy.dot(self._wx.T)) * (self._krnY.dot((self._krnX.dot(Mtx2D.T)).T))

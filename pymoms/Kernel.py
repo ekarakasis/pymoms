@@ -84,7 +84,7 @@ import numpy as _np
 
 # -----------------------------------------------------------------------------------
 
-def GetKernel(family, dim):
+def GetKernel(family, krnLen):
     """It is responsible for returning the selected kernel's calculation function along with the coresponding weights and some other stuff.
     
     Parameters
@@ -98,10 +98,9 @@ def GetKernel(family, dim):
             * 'geometric' : the geometric monomials (Pn(x)   = x**n),
             * 'central'   : the central monomials (Pn(x; xm) = (x-xm)**n)
 
-    dim: int
-        The 'dim' parameter represents the length of the set of values, which will be
-        used as variable in the kernel's calculation.
-        Example: in the geometric kernel (Pn(x)=x**n), the x variable takes values x = np.arange(0, dim)
+    krnLen: int
+        It represents the kernel's length. Each kernel is a vector of values, which are
+        calculated by the selected 'family' of functions.
     
     Returns
     -------
@@ -109,31 +108,76 @@ def GetKernel(family, dim):
         The first element of the resulted tuple is the kernel's function, the second the the coresponding
         weight function, the third is the variables values that are used as input in the kernel function
         and finally the fourth element is a flag (boolean) which infroms whether or not the kernel is orthogonal.
+
+    Examples 
+    --------
+    from pymoms import Kernel
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    def myplot(x, y, title, ylabel):
+        plt.figure(figsize=(15,5))
+        plt.plot(x, y)
+        plt.grid('on')
+        plt.title(title)
+        plt.xlabel('x')
+        plt.ylabel(ylabel)
+        plt.show()
+        
+    upToOrder = 5
+    krnLen = 100
+
+    # Get the Chebyshev Polynomial of the first kind as Kernel.
+    # Actually, for the particular polynomial family, the resulted xi is given by:
+    # xi = np.cos(np.pi*(np.arange(0, krnLen)+0.5)/float(krnLen))
+    kernel, weights, xi, isOrthogonal = Kernel.GetKernel('chebyshev1', krnLen)
+
+    # Currently, the supported kernel families are:
+    #    * 'chebyshev1': the Chebyshev polynomials of the first kind,        
+    #    * 'chebyshevD': the Discrete Chebyshev (or else Tchebichef) polynomials,
+    #    * 'geometric' : the geometric monomials (Pn(x)   = x**n),
+    #    * 'central'   : the central monomials (Pn(x; xm) = (x-xm)**n)
+
+    # Calculate the polynomial values and the corresponding weights
+    P = kernel(upToOrder, xi)
+    Wp = weights(upToOrder, krnLen)
+
+    P_norm = np.zeros(P.shape)
+    # normalized the polynomial values using the weights
+    for idx, p in enumerate(P):
+        P_norm[idx,:] = P[idx,:] * Wp[idx]
+
+    myplot(xi, P.T, 'Chebyshef Polynomial of first kind', '$P_{n}(x)$')
+    myplot(xi, P_norm.T, 'Norm. Chebyshef Polynomial of first kind', '$\overline{P}_{n}(x)$')
+
+    # let us define a different xi:
+    xi = np.linspace(-1, 1, krnLen)
+    myplot(xi, P.T, 'Chebyshef Polynomial of first kind', '$P_{n}(x)$')
     """
 
     kernels = {
         'chebyshev1': { # continuous Chebychev of 1st kind
             'poly'        : ConOrthoPoly.Chebyshev1st.Poly,
             'weights'     : ConOrthoPoly.Chebyshev1st.WeightScheme,
-            'x'           : _np.cos(_np.pi*(_np.arange(0, dim)+0.5)/float(dim)),
+            'x'           : _np.cos(_np.pi*(_np.arange(0, krnLen)+0.5)/float(krnLen)),
             'isOrthogonal': True,
         },
         'chebyshevD': { # discrete Chebyshef (or else Tchebichef)
             'poly'        : DisOrthoPoly.Chebyshev.Poly,
             'weights'     : DisOrthoPoly.Chebyshev.WeightScheme,
-            'x'           : _np.arange(0, dim),
+            'x'           : _np.arange(0, krnLen),
             'isOrthogonal': True,
         },
         'geometric': { 
             'poly'        : NonOrthoFunc.Geometric.Calc,
             'weights'     : NonOrthoFunc.Geometric.WeightScheme,
-            'x'           : _np.arange(0, dim) / dim, # normalize for improve instability issues
+            'x'           : _np.arange(0, krnLen) / krnLen, # normalize for improve instability issues
             'isOrthogonal': False,
         },
         'central': { 
             'poly'        : NonOrthoFunc.Central.Calc,
             'weights'     : NonOrthoFunc.Central.WeightScheme,
-            'x'           : (_np.arange(0, dim) - (dim-1)/2.) / dim, # normalize for improve instability issues
+            'x'           : (_np.arange(0, krnLen) - (krnLen-1)/2.) / krnLen, # normalize for improve instability issues
             'isOrthogonal': False,
         },
     }  

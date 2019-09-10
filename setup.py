@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
       name         = "pymoms",
-      version      = '0.1.0',
+      version      = '0.1.1',
       description  = "Moments Transform",
       url          = "https://github.com/ekarakasis/pymoms",
       author       = "Evangelos G. Karakasis",
