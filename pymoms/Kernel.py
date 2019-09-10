@@ -98,10 +98,9 @@ def GetKernel(family, dim):
             * 'geometric' : the geometric monomials (Pn(x)   = x**n),
             * 'central'   : the central monomials (Pn(x; xm) = (x-xm)**n)
 
-    dim: int
-        The 'dim' parameter represents the length of the set of values, which will be
-        used as variable in the kernel's calculation.
-        Example: in the geometric kernel (Pn(x)=x**n), the x variable takes values x = np.arange(0, dim)
+    krnLen: int
+        It represents the kernel's length. Each kernel is a vector of values, which are
+        calculated by the selected 'family' of functions.
     
     Returns
     -------
