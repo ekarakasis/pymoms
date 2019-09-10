@@ -201,17 +201,29 @@ class Moments2D:
 
         # NOTE: for template matching it is a good idea to enable the following code,
         # but in cases where the moments are going to be used as local descriptors
-        # of key points, should be left as comment.
+        # of key points, should be not be run.
 
         # it calculates the center of mass for being used in central moments instead
         # of the middle point of the kernel's domain.
-        # if self._family[0] == 'central' and self._family[1] == 'central':
-        #     ym, xm = self.GetCenterOfMass(Mtx2D)
-        #     yj = _np.arange(0, self._shape[0]) - ym
-        #     xi = _np.arange(0, self._shape[1]) - xm
-        #     Calc = _Kernel.NonOrthoFunc.Central.Calc
-        #     self._krnY = Calc(self._upToDegree[0], yj)
-        #     self._krnX = Calc(self._upToDegree[1], xi)
+        if self._keyWords['fromCenterOfMass'] and 'central' in self._family:
+            
+            ym, xm = self.GetCenterOfMass(Mtx2D)
+            
+            if self._family[0] == 'central' and self._family[1] == 'central':                
+                yj = _np.arange(0, self._shape[0]) - ym
+                xi = _np.arange(0, self._shape[1]) - xm
+                Calc = _Kernel.NonOrthoFunc.Central.Calc
+                self._krnY = Calc(self._upToDegree[0], yj)
+                self._krnX = Calc(self._upToDegree[1], xi)
+            elif self._family[0] == 'central':                
+                yj = _np.arange(0, self._shape[0]) - ym
+                Calc = _Kernel.NonOrthoFunc.Central.Calc
+                self._krnY = Calc(self._upToDegree[0], yj)
+            elif self._family[1] == 'central':                
+                xi = _np.arange(0, self._shape[1]) - xm
+                Calc = _Kernel.NonOrthoFunc.Central.Calc
+                self._krnX = Calc(self._upToDegree[1], xi)
+            
 
 
         return (self._wy.dot(self._wx.T)) * (self._krnY.dot((self._krnX.dot(Mtx2D.T)).T))
