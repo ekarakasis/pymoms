@@ -134,7 +134,17 @@ class Moments2D:
         invariants. IEEE Transactions on Image Processing, 23(2), 596-611.
     """
 
-    def __init__(self, family, upToDegree, shape):
+    def __init__(self, family, upToDegree, shape, **kwargs):
+
+        # ===== Checks for additional key word arguments =====
+        self._keyWords = {
+            'fromCenterOfMass': False,
+        }
+
+        for kw in kwargs:
+            if kw in self._keyWords:
+                self._keyWords[kw] = kwargs[kw]        
+
 
         # ===== Check parameters length =====
         if len(family) == 1:
