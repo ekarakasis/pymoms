@@ -98,7 +98,7 @@ print('\nreconstructed 2D matrix:\n {}'.format(Mtx2D_reconstructed))
 
 # NOTE: not all the kernels have inverse transform.            
 ```
-Output:
+Output *(your output will be different due to the random way the Mtx2D is created)*:
 ```
     original 2D matrix:
      [[ 97 139 232 229   6]
@@ -134,12 +134,12 @@ def myplot(x, y, title, ylabel):
     plt.show()
     
 upToOrder = 5
-xLen = 100
+krnLen = 100
 
 # Get the Chebyshev Polynomial of the first kind as Kernel.
 # Actually, for the particular polynomial family, the resulted xi is given by:
-# xi = np.cos(np.pi*(np.arange(0, xLen)+0.5)/float(xLen))
-kernel, weights, xi, isOrthogonal = Kernel.GetKernel('chebyshev1', xLen)
+# xi = np.cos(np.pi*(np.arange(0, krnLen)+0.5)/float(krnLen))
+kernel, weights, xi, isOrthogonal = Kernel.GetKernel('chebyshev1', krnLen)
 
 # Currently, the supported kernel families are:
 #    * 'chebyshev1': the Chebyshev polynomials of the first kind,        
@@ -149,7 +149,7 @@ kernel, weights, xi, isOrthogonal = Kernel.GetKernel('chebyshev1', xLen)
 
 # Calculate the polynomial values and the corresponding weights
 P = kernel(upToOrder, xi)
-Wp = weights(upToOrder, xLen)
+Wp = weights(upToOrder, krnLen)
 
 P_norm = np.zeros(P.shape)
 # normalized the polynomial values using the weights
@@ -160,7 +160,7 @@ myplot(xi, P.T, 'Chebyshef Polynomial of first kind', '$P_{n}(x)$')
 myplot(xi, P_norm.T, 'Norm. Chebyshef Polynomial of first kind', '$\overline{P}_{n}(x)$')
 
 # let us define a different xi:
-xi = np.linspace(-1, 1, xLen)
+xi = np.linspace(-1, 1, krnLen)
 myplot(xi, P.T, 'Chebyshef Polynomial of first kind', '$P_{n}(x)$')
 ```
 Output:
