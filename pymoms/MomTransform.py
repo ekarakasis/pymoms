@@ -146,17 +146,17 @@ class Moments2D:
         cols = 1
 
         upToDegreeY = upToDegree[rows]
-        upToDegreeX = upToDegree[cols]
-        DimY        = shape[rows]
-        DimX        = shape[cols]
+        upToDegreeX = upToDegree[cols]        
+        krnLenY        = shape[rows]
+        krnLenX        = shape[cols]
 
-        kernelY, weightsY, yj, self._isOrthogonalY = _Kernel.GetKernel(family[rows], DimY)
-        kernelX, weightsX, xi, self._isOrthogonalX = _Kernel.GetKernel(family[cols], DimX)                
+        kernelY, weightsY, yj, self._isOrthogonalY = _Kernel.GetKernel(family[rows], krnLenY)
+        kernelX, weightsX, xi, self._isOrthogonalX = _Kernel.GetKernel(family[cols], krnLenX)                
                         
         self._krnY = kernelY(upToDegreeY, yj)
         self._krnX = kernelX(upToDegreeX, xi)
-        self._wy   = weightsY(upToDegreeY, DimY)
-        self._wx   = weightsX(upToDegreeX, DimX)
+        self._wy   = weightsY(upToDegreeY, krnLenY)
+        self._wx   = weightsX(upToDegreeX, krnLenX)
 
         # # used by the implementation of forward transfrom with convolution
         # self._krnl2D = _np.zeros((self._upToDegree[0]+1, self._upToDegree[1]+1, self._shape[0], self._shape[1]))
