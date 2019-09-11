@@ -25,7 +25,7 @@
 
 # TODO: 
 # > Add logger
-# > Implement Hu, normalized central and standard geometric moments
+# > Implement normalized central and standard geometric moments
 # > Implement complex moments and their invariant counterparts
 # > Implement radial moments
 # > Implement radial moment invariants
