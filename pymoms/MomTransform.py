@@ -25,7 +25,7 @@
 
 # TODO: 
 # > Add logger
-# > Implement Hu, normalized central and standard geometric moments
+# > Implement normalized central and standard geometric moments
 # > Implement complex moments and their invariant counterparts
 # > Implement radial moments
 # > Implement radial moment invariants
@@ -358,3 +358,90 @@ class Moments2D:
 
 
         return theta
+
+        
+    @staticmethod
+    def HuMoments(Mtx2D):
+        """Calculates the Hu moment invariants.
+
+        The first six moment invariants remain constant under translation,
+        rotation and scaling, while the senenth moment invariant is skew invariant
+        and according to Hu[1], it can be used for distinguishing mirror images.
+        
+        Parameters
+        ----------
+        Mtx2D: ndarray
+            The 2D array for which we want to calculate the Hu moment invariants.
+        
+        Returns
+        -------
+        ndarray
+            Returns a 1D array of seven elements. Each element corresponds to a Hu
+            invariant moment ([Hu1, Hu2, Hu3, Hu4, Hu5, Hu6, Hu7]).
+
+        Example 
+        -------
+        from pymoms.MomTransform import Moments2D
+        import numpy as np
+
+        # creates a small 2D matrix with integer values in the range [0, 255]    
+        # for easy visualization of the results
+        mtxShape = (5, 5)
+        Mtx2D = np.random.randint(0, 255, mtxShape)
+        # matrix normalization leads to better dynamic range of the Hu moment invariants
+        Mtx2D = Mtx2D/np.sum(Mtx2D) 
+
+        Hu = Moments2D.HuMoments(Mtx2D) # Hu for original matrix
+        Hu_r = Moments2D.HuMoments(Mtx2D.T) # Hu for 90 degrees rotation
+        Hu_m = Moments2D.HuMoments(np.fliplr(Mtx2D)) # Hu for mirror matrix
+
+        print('Hu moment invariants for the original matrix: \n{}'.format(Hu[:, np.newaxis]))
+        print('\nHu moment invariants for the rotated matrix: \n{}'.format(Hu_r[:, np.newaxis]))
+        print('\nHu moment invariants for the mirrored matrix: \n{}'.format(Hu_m[:, np.newaxis]))
+
+
+
+        Reference
+        ---------
+        [1] Hu, M. K. (1962). Visual pattern recognition by moment invariants. 
+        IRE transactions on information theory, 8(2), 179-187.
+        """
+
+        y, x = _np.mgrid[:Mtx2D.shape[0], :Mtx2D.shape[1]]
+        ym   = _np.sum(y * Mtx2D) / _np.sum(Mtx2D)
+        xm   = _np.sum(x * Mtx2D) / _np.sum(Mtx2D)
+        
+        gamma = lambda p, q: (p + q + 2.) / 2.
+        denom = lambda p, q: _np.sum(Mtx2D)**gamma(p, q)
+        central = lambda p, q: _np.sum(((y - ym)**q) * ((x - xm)**p) * Mtx2D)
+        normoms = lambda p, q: central(p, q) / denom(p, q)
+
+        n20 = normoms(2, 0)
+        n02 = normoms(0, 2)
+        n11 = normoms(1, 1)
+        n30 = normoms(3, 0)
+        n12 = normoms(1, 2)
+        n21 = normoms(2, 1)
+        n03 = normoms(0, 3)
+
+        A = n30 - 3*n12
+        B = 3*n21 - n03
+        C = n30 + n12
+        D = n21 + n03
+        E = n20 - n02
+        Ds = D**2
+        Cs = C**2
+        F = Cs - 3*Ds
+        G = 3*Cs - Ds
+        CF = C*F
+        DG = D*G
+
+        Hu1 = n20 + n02 
+        Hu2 = E**2 + 4*(n11**2)
+        Hu3 = A**2 + B**2
+        Hu4 = Cs + Ds
+        Hu5 = A*CF + B*DG
+        Hu6 = E*(Cs - Ds) + 4*n11*C*D
+        Hu7 = B*CF - A*DG
+
+        return _np.array([Hu1, Hu2, Hu3, Hu4, Hu5, Hu6, Hu7])
